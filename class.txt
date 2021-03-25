@@ -1,0 +1,6 @@
+Aedes_albopictus
+Aedes_vexans
+Anopheles_sinensis
+Culex_pipiens
+Culex_tritaeniorhynchus
+Non_vectors
