@@ -13,6 +13,7 @@ import base64
 import torch
 import torchvision
 from torchvision import datasets, models, transforms
+import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 
@@ -37,7 +38,9 @@ preprocess = transforms.Compose([
 app.layout = html.Div([
     html.Div([
         html.H2('The Mosquito Classifier'),
-        html.Strong('This application will attempt to classify your picture into 5 different species of mosquito or non-vector. Drag your image file into the below box to classify.'),
+        html.Strong('This application will attempt to classify your picture into 5 different species of mosquito or non-vector.'), 
+        html.Br(),
+        html.Strong('Drag your image file into the below box to classify.'),
     ]),
 
     dcc.Upload(
@@ -78,8 +81,8 @@ def parse_contents(contents, filename, date):
     pred = model(img)
 
     print(pred.detach().numpy())
-
-    df = pd.DataFrame({'class':labels, 'probability':pred[0].detach().numpy()})
+    prob = F.softmax(pred, dim=1)
+    df = pd.DataFrame({'class':labels, 'probability':prob[0].detach().numpy()*100})
     
     return html.Div([
         # HTML images accept base64 encoded strings in the same format
@@ -96,7 +99,8 @@ def generate_table(dataframe, max_rows=10):
         ),
         html.Tbody([
             html.Tr([
-                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+                #html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+                html.Td(dataframe.iloc[i][0]), html.Td("{:.2f}%".format(dataframe.iloc[i][1]), style={'text-align' : 'right'}) 
             ]) for i in range(min(len(dataframe), max_rows))
         ])
     ])
